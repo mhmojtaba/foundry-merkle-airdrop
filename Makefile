@@ -35,6 +35,9 @@ remove :; rm -rf .gitmodules && rm -rf .git/modules/* && rm -rf lib && touch .gi
 
 install :; forge install
 
+# install dmfxyz murky merkle 
+murky :;forge install dmfxyz/murky --no-commit
+
 # Update Dependencies
 update:; forge update
 
