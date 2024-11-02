@@ -14,14 +14,12 @@ contract ClaimAirdrop is Script {
 
     address claiming_address = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     uint256 claiming_amount = 25 * 1e18;
-    bytes32[] proof = [
-        0xd1445c931158119b00449ffcac3c947d028c0c359c34a6646d95962b3b55c6ad,
-            0xe5ebd1e1b5a5478a944ecab36a9a954ac3b6b8216875f6524caa7a1d87096576
-        
-    ];
+    bytes32 proofOne = 0xd1445c931158119b00449ffcac3c947d028c0c359c34a6646d95962b3b55c6ad;
+    bytes32 proofTwo = 0xe5ebd1e1b5a5478a944ecab36a9a954ac3b6b8216875f6524caa7a1d87096576;
+    bytes32[] proof = [proofOne,proofTwo];
 
     bytes private SIGNATURE = hex"fbd2270e6f23fb5fe9248480c0f4be8a4e9bd77c3ad0b1333cc60b5debc511602a2a06c24085d8d7c038bad84edc53664c8ce0346caeaa3570afec0e61144dc11c";
-    function claimAirdrop(address airdrop) {
+    function claimAirdrop(address airdrop) public {
         vm.startBroadcast();
         (uint8 v, bytes32 r, bytes32 s) = spliteSignature(SIGNATURE);
         MerkleAirdrop(airdrop).claim(claiming_address, claiming_amount, proof,v,r,s);
@@ -31,12 +29,11 @@ contract ClaimAirdrop is Script {
     function spliteSignature(bytes memory signature) public pure returns (uint8 v, bytes32 r, bytes32 s) {
         if(signature.length != 65) revert claimAirdropScripT__signature_must_be_65_bytes();
 
-        bytes memory r = signature[0..32]; // the first 32 bytes
-        bytes memory s = signature[32..64]; // the second 32 bytes
-        bytes memory v = signature[64..65]; // the last byte
-
-        return (uint8(v[0]), bytes32(r), bytes32(s));
-        
+        assembly{
+            r:= mload(add(signature,32))
+            s:= mload(add(signature,64))
+            v:= byte(0,mload(add(signature,96)))
+        }
     }
 
     function run() public  {
